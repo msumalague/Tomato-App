@@ -1,5 +1,6 @@
 import datetime
 import pickle
+from datetime import datetime
 
 import requests
 from flask import Flask, request, jsonify
@@ -24,7 +25,13 @@ video_detector.setModelPath(os.path.join(execution_path, "model.pt"))
 video_detector.setJsonPath(os.path.join(execution_path, "json/detection_config.json"))
 video_detector.loadModel()
 
-model = pickle.load(open('model.pkl', 'rb'))
+with open('model.pkl', 'rb') as f:
+    model = pickle.load(f)
+
+@app.route('/')
+def hello():
+    app.logger.info('Received a request.')
+    return 'Hello, World!'
 
 @app.route("/detect", methods=["POST"])
 def detect():
@@ -77,22 +84,23 @@ def live_detect():
 
     return "Live detection completed"
 
-@app.route("/survival_rate", methods=['GET'])
-def survival_rate():
-    result = request.args
-    data = [
-        float(result["area_planted"]),
-        float(result["area_harvested"]),
-        float(result["temp_max"]),
-        float(result["month"]),
-        float(result["temp_min"]),
-        float(result["rel_humidity"]),
-        float(result["rainfall"]),
-        float(result["temp_mean"]),
-        float(result["production_kg"])
-    ]
-    prediction = model.predict([data])[0]
-    return jsonify({'survival_rate': float(prediction)})
+# @app.route("/survival_rate", methods=['GET'])
+# def survival_rate():
+#     result = request.args
+#     data = [
+#         float(result["area_planted"]),
+#         float(result["area_harvested"]),
+#         float(result["temp_max"]),
+#         float(result["month"]),
+#         float(result["temp_min"]),
+#         float(result["rel_humidity"]),
+#         float(result["rainfall"]),
+#         float(result["temp_mean"]),
+#         float(result["production_kg"])
+#     ]
+#     prediction = model.predict([data])[0]
+#     return jsonify({'survival_rate': float(prediction)})
+
 
 # API endpoint to get weather data
 def get_weather_data():
@@ -164,7 +172,6 @@ def predict():
     return jsonify({'survival_rate': float(prediction)})
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
 
-#http://localhost:5000/predict/?area_planted=10.5&area_harvested=8.2&production_kg=1500.0
 
